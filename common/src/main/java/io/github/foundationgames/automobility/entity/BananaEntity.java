@@ -34,6 +34,7 @@ public class BananaEntity extends Entity {
             AutomobileEntity vehicle = vehicles.get(0);
             vehicle.spinOut();
 
+
             this.discard();
         }
     }

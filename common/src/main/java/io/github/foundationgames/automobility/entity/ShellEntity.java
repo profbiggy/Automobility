@@ -13,6 +13,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 
 public class ShellEntity extends Entity {
 
@@ -27,15 +29,39 @@ public class ShellEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
-        this.move(MoverType.SELF, this.getDeltaMovement());
-        setDeltaMovement(getDeltaMovement().multiply(0.99f,.99F,.99f).add(0, -0.08f, 0));
+        var deltaMovement = getDeltaMovement();
 
-        //collision
-        boolean $$1 = false;
-        HitResult $$0 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-        if ($$0.getType() != HitResult.Type.MISS && !$$1) {
-            this.onHit($$0);
+        this.move(MoverType.SELF, this.getDeltaMovement());
+
+        if(getDeltaMovement().x == 0){
+            setDeltaMovement(-deltaMovement.x,getDeltaMovement().y,deltaMovement.z);
         }
+        if(getDeltaMovement().z == 0){
+            setDeltaMovement(deltaMovement.x,getDeltaMovement().y,-deltaMovement.z);
+        }
+        setDeltaMovement(getDeltaMovement().multiply(0.99f,.99F,.99f).add(0, -0.08f, 0));
+        //setPos(this.getX(),this.getY()+.25,this.getZ());
+        //setDeltaMovement(getDeltaMovement().multiply(2f,2f,2f));
+        //collision
+//        boolean $$1 = false;
+//        HitResult $$0 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+//
+//        if ($$0.getType() != HitResult.Type.MISS && !$$1) {
+//            this.onHit($$0);
+//        }
+        //setDeltaMovement(getDeltaMovement().multiply(.5f,.5f,.5f));
+        //setPos(this.getX(),this.getY()-.25,this.getZ());
+
+        List<AutomobileEntity> vehicles = level().getEntitiesOfClass(AutomobileEntity.class, this.getBoundingBox());
+        if (!vehicles.isEmpty()) {
+            AutomobileEntity vehicle = vehicles.get(0);
+
+            vehicle.spinOut();
+            System.out.println(vehicle);
+
+            this.discard();
+        }
+
 
     }
 
@@ -92,27 +118,19 @@ public class ShellEntity extends Entity {
 
     protected void onHitEntity(EntityHitResult result) {
         // add a check to make sure the entity is an instance of AutomobileEntity
-        if (!(result.getEntity() instanceof AutomobileEntity vehicle)) {
-            return;
-        }
-
-        // this could produce an exception careful casting this way, see above
-        vehicle.spinOut();
-
-        this.discard();
+//        if (result.getEntity() instanceof AutomobileEntity vehicle) {
+//            vehicle.spinOut();
+//            this.discard();
+//        }
     }
     protected void onHitBlock(BlockHitResult result) {
         Direction direction = result.getDirection();
-        if (direction == Direction.UP ||direction == Direction.DOWN) { return; }
-        System.out.println(direction);
-        System.out.println(result.getBlockPos().getY() + 1);
-        System.out.println(this.getY());
+//        if (direction == Direction.UP ||direction == Direction.DOWN) {
+//            setDeltaMovement(getDeltaMovement().x,0,getDeltaMovement().z); }
         if(direction == Direction.NORTH || direction == Direction.SOUTH) {
-            if (result.getBlockPos().getY() != ((int) (this.getY() + 0.01))) { return; }
             this.setDeltaMovement(getDeltaMovement().x,getDeltaMovement().y,-getDeltaMovement().z);
         }
         else if(direction == Direction.WEST || direction == Direction.EAST) {
-            if (result.getBlockPos().getY() != ((int) (this.getY() + 0.01))) { return; }
             this.setDeltaMovement(-getDeltaMovement().x, getDeltaMovement().y, getDeltaMovement().z);
         }
 
